@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Trading App</title>
+    <style>
+        /* --- CSS (DESIGN) --- */
+        body {
+            background-color: #0b0e11;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background-color: #1e2329;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fcd535;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .container {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #2b3139, #1e2329);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #474d57;
+            margin-bottom: 20px;
+        }
+        .balance-title { color: #848e9c; font-size: 14px; }
+        .balance-value { font-size: 32px; font-weight: bold; margin-top: 5px; }
+
+        /* Chart Area */
+        .chart-box {
+            height: 350px;
+            background: #161a1e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #2b3139;
+        }
+
+        /* Buttons */
+        .action-area {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-buy { background-color: #0ecb81; box-shadow: 0 4px 15px rgba(14, 203, 129, 0.4); }
+        .btn-sell { background-color: #f6465d; box-shadow: 0 4px 15px rgba(246, 70, 93, 0.4); }
+
+        /* History Log */
+        .logs {
+            background-color: #1e2329;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .log-item {
+            font-size: 13px;
+            padding: 8px 0;
+            border-bottom: 1px solid #2b3139;
+            display: flex;
+            justify-content: space-between;
+        }
+        .green { color: #0ecb81; }
+        .red { color: #f6465d; }
+    </style>
+</head>
+<body>
+
+    <header>⚡ Super AI Trader</header>
+
+    <div class="container">
+        <div class="balance-card">
+            <div class="balance-title">Demo Wallet Balance</div>
+            <div class="balance-value" id="userBalance">$10,000.00</div>
+        </div>
+
+        <div class="chart-box">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                {
+                "autosize": true,
+                "symbol": "BINANCE:BTCUSDT",
+                "interval": "1",
+                "timezone": "Asia/Kolkata",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "hide_legend": true,
+                "save_image": false,
+                "hide_volume": true,
+                "support_host": "https://www.tradingview.com"
+                }
+                </script>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="btn btn-buy" onclick="trade('BUY')">BUY UP 📈</button>
+            <button class="btn btn-sell" onclick="trade('SELL')">SELL DOWN 📉</button>
+        </div>
+
+        <div class="logs">
+            <div style="color: #848e9c; margin-bottom: 10px;">Recent Activity</div>
+            <div id="historyList">
+                <div class="log-item" style="color: gray; text-align: center;">No trades yet...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- JAVASCRIPT (LOGIC) --- */
+        let balance = 10000;
+
+        function updateDisplay() {
+            document.getElementById('userBalance').innerText = '$' + balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        }
+
+        function trade(type) {
+            // Fake Trading Logic
+            let amount = Math.floor(Math.random() * 500) + 100; // Random Profit/Loss
+            let isProfit = Math.random() > 0.4; // 60% chance to win (Demo magic)
+            
+            let message = "";
+            let colorClass = "";
+
+            if(type === 'BUY') {
+                if(isProfit) {
+                    balance += amount;
+                    message = `Success! Bought BTC. Profit: +$${amount}`;
+                    colorClass = "green";
+                } else {
+                    balance -= amount;
+                    message = `Loss! Market dipped. Loss: -$${amount}`;
+                    colorClass = "red";
+                }
+            } else {
+                if(isProfit) {
+                    balance += amount;
+                    message = `Success! Sold BTC. Profit: +$${amount}`;
+                    colorClass = "green";
+                } else {
+                    balance -= amount;
+                    message = `Loss! Market pumped. Loss: -$${amount}`;
+                    colorClass = "red";
+                }
+            }
+
+            updateDisplay();
+            addToHistory(message, colorClass);
+            
+            // Vibration for feel (Android only)
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function addToHistory(msg, color) {
+            let list = document.getElementById('historyList');
+            if(list.innerText.includes("No trades")) list.innerHTML = "";
+            
+            let newItem = document.createElement('div');
+            newItem.className = "log-item " + color;
+            let time = new Date().toLocaleTimeString();
+            newItem.innerHTML = `<span>${msg}</span> <span style="color:#555; font-size:10px;">${time}</span>`;
+            
+            list.prepend(newItem);
+        }
+    </script>
+</body>
+</html>
